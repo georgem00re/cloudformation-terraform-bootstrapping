@@ -1,0 +1,67 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Resources required to bootstrap Terraform backend (S3 + DynamoDB + IAM)"
+
+Resources:
+  # S3 bucket responsible for storing Terraform state (.tfstate) files.
+  TerraformStateBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  # DynamoDB table used by Terraform for state locking.
+  TerraformStateLockTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: LockID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: LockID
+          KeyType: HASH
+
+  # The IAM user that Terraform will use to deploy AWS resources.
+  TerraformUser:
+    Type: AWS::IAM::User
+
+  # The Terraform IAM user must have an access key (and secret access key) for programmatic access to AWS.
+  TerraformAccessKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: !Ref TerraformUser
+
+  # The IAM role that the Terraform user must assume to gain the necessary permissions to manage AWS infrastructure.
+  TerraformExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !GetAtt TerraformUser.Arn
+            Action: sts:AssumeRole
+
+      # For simplicity, I'm grant full administrative access to this role. However, you will want to adhere to the
+      # principle of least privilege. At minimum, this IAM role should enable the Terraform user to read and write
+      # to and from the tfstate S3 bucket and the tfstate-lock DynamoDB table.
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+
+Outputs:
+  AccessKeyId:
+    Value: !Ref TerraformAccessKey
+    Description: Access key for the Terraform IAM user
+  SecretAccessKey:
+    Value: !GetAtt TerraformAccessKey.SecretAccessKey
+    Description: Secret access for the Terraform IAM user
