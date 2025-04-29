@@ -1,6 +1,6 @@
 include .env
 
-CLOUDFORMATION_TEMPLATE_PATH ?= ./templates/main.yaml
+CLOUDFORMATION_TEMPLATE_PATH ?= ./cloudformation-templates/main.yaml
 
 cloudformation-deploy-stack:
 	aws cloudformation deploy \
