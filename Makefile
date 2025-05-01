@@ -25,27 +25,27 @@ cloudformation-validate-template:
 
 cloudformation-get-terraform-access-key-id:
 	aws cloudformation describe-stacks \
-      --stack-name $(STACK_NAME) \
-      --region $(AWS_REGION) \
-      --profile $(CLOUDFORMATION_AWS_PROFILE) \
-      --query "Stacks[0].Outputs[?OutputKey=='AccessKeyId'].OutputValue" \
-      --output text
+      	--stack-name $(STACK_NAME) \
+      	--region $(AWS_REGION) \
+      	--profile $(CLOUDFORMATION_AWS_PROFILE) \
+      	--query "Stacks[0].Outputs[?OutputKey=='AccessKeyId'].OutputValue" \
+      	--output text
 
 cloudformation-get-terraform-secret-access-key:
 	aws cloudformation describe-stacks \
-	  --stack-name $(STACK_NAME) \
-	  --region $(AWS_REGION) \
-	  --profile $(CLOUDFORMATION_AWS_PROFILE) \
-	  --query "Stacks[0].Outputs[?OutputKey=='SecretAccessKey'].OutputValue" \
-	  --output text
+		--stack-name $(STACK_NAME) \
+	  	--region $(AWS_REGION) \
+	  	--profile $(CLOUDFORMATION_AWS_PROFILE) \
+	  	--query "Stacks[0].Outputs[?OutputKey=='SecretAccessKey'].OutputValue" \
+	  	--output text
 
 cloudformation-get-terraform-execution-role-arn:
 	aws cloudformation describe-stacks \
-	  --stack-name $(STACK_NAME) \
-	  --region $(AWS_REGION) \
-	  --profile $(CLOUDFORMATION_AWS_PROFILE) \
-	  --query "Stacks[0].Outputs[?OutputKey=='TerraformExecutionRoleArn'].OutputValue" \
-	  --output text
+		--stack-name $(STACK_NAME) \
+	  	--region $(AWS_REGION) \
+	  	--profile $(CLOUDFORMATION_AWS_PROFILE) \
+	  	--query "Stacks[0].Outputs[?OutputKey=='TerraformExecutionRoleArn'].OutputValue" \
+	  	--output text
 
 assume-terraform-execution-role:
 	AWS_ACCESS_KEY_ID=$(TERRAFORM_USER_ACCESS_KEY_ID) \
@@ -60,10 +60,10 @@ terraform-init:
     AWS_SECRET_ACCESS_KEY=$(TERRAFORM_EXECUTION_ROLE_SECRET_ACCESS_KEY) \
     AWS_SESSION_TOKEN=$(TERRAFORM_EXECUTION_ROLE_SESSION_TOKEN) \
 	terraform -chdir=terraform init \
-	  -backend-config="bucket=$(TF_STATE_BUCKET_NAME)" \
-	  -backend-config="key=terraform.tfstate" \
-	  -backend-config="region=$(AWS_REGION)" \
-	  -backend-config="dynamodb_table=$(TF_STATE_LOCK_TABLE_NAME)" \
+		-backend-config="bucket=$(TF_STATE_BUCKET_NAME)" \
+	  	-backend-config="key=terraform.tfstate" \
+	  	-backend-config="region=$(AWS_REGION)" \
+	  	-backend-config="dynamodb_table=$(TF_STATE_LOCK_TABLE_NAME)" \
 
 terraform-deploy-resources:
 	TF_VAR_aws_region=$(AWS_REGION) \
