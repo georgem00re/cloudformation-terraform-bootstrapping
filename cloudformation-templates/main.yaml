@@ -1,11 +1,18 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: "Resources required to bootstrap Terraform backend (S3 + DynamoDB + IAM)"
 
+Parameters:
+  TerraformStateBucketName:
+    Type: String
+  TerraformStateLockTableName:
+    Type: String
+
 Resources:
   # S3 bucket responsible for storing Terraform state (.tfstate) files.
   TerraformStateBucket:
     Type: AWS::S3::Bucket
     Properties:
+      BucketName: !Ref TerraformStateBucketName
       VersioningConfiguration:
         Status: Enabled
       BucketEncryption:
@@ -22,6 +29,7 @@ Resources:
   TerraformStateLockTable:
     Type: AWS::DynamoDB::Table
     Properties:
+      TableName: !Ref TerraformStateLockTableName
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: LockID
@@ -65,3 +73,5 @@ Outputs:
   SecretAccessKey:
     Value: !GetAtt TerraformAccessKey.SecretAccessKey
     Description: Secret access for the Terraform IAM user
+  TerraformExecutionRoleArn:
+    Value: !GetAtt TerraformExecutionRole.Arn
